@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<!-- 2023-07-12 Wed 11:30 -->
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Testing for a Change in the Slope Coefficient</title>
+<meta name="author" content="Matt Brigida, Ph.D." />
+<meta name="generator" content="Org Mode" />
+<link rel="stylesheet" type="text/css" href="https://fniessen.github.io/org-html-themes/src/readtheorg_theme/css/htmlize.css"/>
+<link rel="stylesheet" type="text/css" href="https://fniessen.github.io/org-html-themes/src/readtheorg_theme/css/readtheorg.css"/>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="https://fniessen.github.io/org-html-themes/src/lib/js/jquery.stickytableheaders.min.js"></script>
+<script type="text/javascript" src="https://fniessen.github.io/org-html-themes/src/readtheorg_theme/js/readtheorg.js"></script>
+<style>pre.src{background:#343131;color:white;} </style>
+<script>
+  window.MathJax = {
+    tex: {
+      ams: {
+        multlineWidth: '85%'
+      },
+      tags: 'ams',
+      tagSide: 'right',
+      tagIndent: '.8em'
+    },
+    chtml: {
+      scale: 1.0,
+      displayAlign: 'center',
+      displayIndent: '0em'
+    },
+    svg: {
+      scale: 1.0,
+      displayAlign: 'center',
+      displayIndent: '0em'
+    },
+    output: {
+      font: 'mathjax-modern',
+      displayOverflow: 'overflow'
+    }
+  };
+</script>
+
+<script
+  id="MathJax-script"
+  async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+</script>
+</head>
+<body>
+<div id="content" class="content">
+<h1 class="title">Testing for a Change in the Slope Coefficient</h1>
+<div id="table-of-contents" role="doc-toc">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents" role="doc-toc">
+<ul>
+<li><a href="#org94b5657">1. Overview</a></li>
+<li><a href="#orgf21f398">2. 1 vs 2 Month Crude Oil Futures</a>
+<ul>
+<li><a href="#org1f549b8">2.1. No Change in Slope</a></li>
+<li><a href="#org2dae80e">2.2. Test for a change in Slope Post 1/1/2020</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+<div id="outline-container-org94b5657" class="outline-2">
+<h2 id="org94b5657"><span class="section-number-2">1.</span> Overview</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+We want to test whether there was a change in the relationship between two time series after some event.  Assume we can model the relationship between the series with a linear regression, so we want to test whether the slope coefficient changed.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-R"><span style="color: #268bd2; font-weight: bold;">library</span>(EIAdata)
+<span style="color: #268bd2; font-weight: bold;">library</span>(quantmod)
+</pre>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-orgf21f398" class="outline-2">
+<h2 id="orgf21f398"><span class="section-number-2">2.</span> 1 vs 2 Month Crude Oil Futures</h2>
+<div class="outline-text-2" id="text-2">
+<div class="org-src-container">
+<pre class="src src-R">key <span style="color: #268bd2; font-weight: bold;">&lt;-</span> <span style="color: #268bd2; font-weight: bold;">source</span>(<span style="color: #2aa198;">"~/eia_key"</span>)$value
+one_month <span style="color: #268bd2; font-weight: bold;">&lt;-</span> getEIA(<span style="color: #2aa198;">'PET.RCLC1.W'</span>, key = key)
+two_month <span style="color: #268bd2; font-weight: bold;">&lt;-</span> getEIA(<span style="color: #2aa198;">'PET.RCLC2.W'</span>, key = key)
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org1f549b8" class="outline-3">
+<h3 id="org1f549b8"><span class="section-number-3">2.1.</span> No Change in Slope</h3>
+<div class="outline-text-3" id="text-2-1">
+<p>
+\[oil2_t = \alpha + \beta oil1_t + \epsilon\]
+</p>
+
+<div class="org-src-container">
+<pre class="src src-R">oil_data <span style="color: #268bd2; font-weight: bold;">&lt;-</span> merge.xts(Delt(one_month)[-1], Delt(two_month)[-1,], join=<span style="color: #2aa198;">"inner"</span>)
+names(oil_data) <span style="color: #268bd2; font-weight: bold;">&lt;-</span> c(<span style="color: #2aa198;">"one"</span>, <span style="color: #2aa198;">"two"</span>)
+oil_data <span style="color: #268bd2; font-weight: bold;">&lt;-</span> oil_data[<span style="color: #2aa198;">'2015-01-01/'</span>]
+reg1 <span style="color: #268bd2; font-weight: bold;">&lt;-</span> lm(oil_data$two ~ oil_data$one)
+summary(reg1)
+</pre>
+</div>
+
+<pre class="example" id="org43bfa60">
+
+Call:
+lm(formula = oil_data$two ~ oil_data$one)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.35516 -0.02315  0.00322  0.02237  0.20823 
+
+Coefficients:
+              Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)  0.0007761  0.0021394   0.363    0.717    
+oil_data$one 0.1298306  0.0135754   9.564   &lt;2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.04503 on 442 degrees of freedom
+Multiple R-squared:  0.1715,	Adjusted R-squared:  0.1696 
+F-statistic: 91.46 on 1 and 442 DF,  p-value: &lt; 2.2e-16
+</pre>
+</div>
+</div>
+
+<div id="outline-container-org2dae80e" class="outline-3">
+<h3 id="org2dae80e"><span class="section-number-3">2.2.</span> Test for a change in Slope Post 1/1/2020</h3>
+<div class="outline-text-3" id="text-2-2">
+<p>
+\[oil2_t = \alpha + \beta_1 oil1_t + \beta_2 * (oil1_t * insicator_t) + \epsilon\]
+</p>
+
+<div class="org-src-container">
+<pre class="src src-R"><span style="color: #586e75;">## </span><span style="color: #586e75;">create an indicator function-----</span>
+oil_data$indicator <span style="color: #268bd2; font-weight: bold;">&lt;-</span> ifelse(index(oil_data) &lt; <span style="color: #2aa198;">"2020-01-01"</span>, 0 , 1)
+oil_data
+</pre>
+</div>
+
+<pre class="example" id="orgc7dd6c6">
+                    one          two indicator
+2015-01-02 -0.041621816 -0.040627227         0
+2015-01-09 -0.087420442 -0.084881129         0
+2015-01-16 -0.034256410 -0.033488939         0
+2015-01-23 -0.011894647 -0.011969761         0
+2015-01-30 -0.017196905 -0.012327311         0
+2015-02-06  0.107830271  0.107811491         0
+2015-02-13  0.009674235  0.010878011         0
+2015-02-20  0.012710207  0.007686395         0
+2015-02-27 -0.043637768 -0.019260107         0
+2015-03-06  0.017565112  0.015944002         0
+       ...                                    
+2023-04-28 -0.036237374 -0.038378993         1
+2023-05-05 -0.067732215 -0.066824209         1
+2023-05-12  0.012788083  0.013224536         1
+2023-05-19 -0.005966422 -0.004582061         1
+2023-05-26  0.015494137  0.015204352         1
+2023-06-02 -0.039862543 -0.038609508         1
+2023-06-09  0.024767359  0.024724882         1
+2023-06-16 -0.029896619 -0.029149233         1
+2023-06-23  0.014256912  0.015227697         1
+2023-06-30 -0.014198495 -0.015282298         1
+</pre>
+
+<div class="org-src-container">
+<pre class="src src-R">reg2 <span style="color: #268bd2; font-weight: bold;">&lt;-</span> lm(oil_data$two ~ oil_data$one + I(oil_data$one * oil_data$indicator))
+summary(reg2)
+</pre>
+</div>
+
+<pre class="example" id="org27b9465">
+
+Call:
+lm(formula = oil_data$two ~ oil_data$one + I(oil_data$one * oil_data$indicator))
+
+Residuals:
+      Min        1Q    Median        3Q       Max 
+-0.256784 -0.002520 -0.000329  0.004423  0.224879 
+
+Coefficients:
+                                       Estimate Std. Error t value Pr(&gt;|t|)    
+(Intercept)                           0.0004253  0.0017376   0.245    0.807    
+oil_data$one                          0.9598248  0.0559223  17.164   &lt;2e-16 ***
+I(oil_data$one * oil_data$indicator) -0.8633876  0.0570306 -15.139   &lt;2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.03657 on 441 degrees of freedom
+Multiple R-squared:  0.4548,	Adjusted R-squared:  0.4523 
+F-statistic: 183.9 on 2 and 441 DF,  p-value: &lt; 2.2e-16
+</pre>
+
+
+<p>
+Pre covid the slope was 0.95.  Post covid the slope was 0.95 - 0.86 = 0.09.  The difference in slope coefficients in significant at the 1% level.
+</p>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: Matt Brigida, Ph.D.</p>
+<p class="date">Created: 2023-07-12 Wed 11:30</p>
+<p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>
