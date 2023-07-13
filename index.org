@@ -7,15 +7,27 @@
 
 * Overview
 
-We want to test whether there was a change in the relationship between two time series after some event.  Assume we can model the relationship between the series with a linear regression, so we want to test whether the slope coefficient changed.
+We want to test whether there was a change in the relationship between two time series after some event.  Assume we can model the relationship between the series with a linear regression, so we want to test whether the slope coefficient changed after some event.  Say we are looking at the relationship between two time-series, /y/ and /x/.
+
+A standard regression would be:
+
+$$y_t = \alpha + \beta_1 x_t + \epsilon_t$$
+
+In this case $\beta_1$ measures the relationship between $x$ and $y$ over the entire sample.  However say we think the relationship changed at time $t^*$.  We then create an indicator variable ($I$) which is 0 before $t^*$ and 1 after.
+
+Our regression would now be:
+
+$$y_t = \alpha + \beta_1 x_t + \beta_2 (x_t I_t) + \epsilon_t$$
+
+where $x_t I_t$ is the product of $x_t$ and the indicator variable at time $t$.
+
+
+* 1 vs 2 Month Crude Oil Futures
 
 #+begin_src R :session ecm :eval yes :results none :exports code
 library(EIAdata)
 library(quantmod)
 #+end_src
-
-
-* 1 vs 2 Month Crude Oil Futures
 
 #+begin_src R :session ecm :eval yes :results none :exports code
 key <- source("~/eia_key")$value

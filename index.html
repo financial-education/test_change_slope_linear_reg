@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2023-07-12 Wed 11:30 -->
+<!-- 2023-07-12 Wed 22:43 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Testing for a Change in the Slope Coefficient</title>
@@ -56,11 +56,11 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents" role="doc-toc">
 <ul>
-<li><a href="#org94b5657">1. Overview</a></li>
-<li><a href="#orgf21f398">2. 1 vs 2 Month Crude Oil Futures</a>
+<li><a href="#org8abb96e">1. Overview</a></li>
+<li><a href="#orgb49b101">2. 1 vs 2 Month Crude Oil Futures</a>
 <ul>
-<li><a href="#org1f549b8">2.1. No Change in Slope</a></li>
-<li><a href="#org2dae80e">2.2. Test for a change in Slope Post 1/1/2020</a></li>
+<li><a href="#org2e74405">2.1. No Change in Slope</a></li>
+<li><a href="#orgad6895a">2.2. Test for a change in Slope Post 1/1/2020</a></li>
 </ul>
 </li>
 </ul>
@@ -68,25 +68,49 @@
 </div>
 
 
-<div id="outline-container-org94b5657" class="outline-2">
-<h2 id="org94b5657"><span class="section-number-2">1.</span> Overview</h2>
+<div id="outline-container-org8abb96e" class="outline-2">
+<h2 id="org8abb96e"><span class="section-number-2">1.</span> Overview</h2>
 <div class="outline-text-2" id="text-1">
 <p>
-We want to test whether there was a change in the relationship between two time series after some event.  Assume we can model the relationship between the series with a linear regression, so we want to test whether the slope coefficient changed.
+We want to test whether there was a change in the relationship between two time series after some event.  Assume we can model the relationship between the series with a linear regression, so we want to test whether the slope coefficient changed after some event.  Say we are looking at the relationship between two time-series, <i>y</i> and <i>x</i>.
 </p>
 
+<p>
+A standard regression would be:
+</p>
+
+<p>
+\[y_t = \alpha + \beta_1 x_t + \epsilon_t\]
+</p>
+
+<p>
+In this case \(\beta_1\) measures the relationship between \(x\) and \(y\) over the entire sample.  However say we think the relationship changed at time \(t^*\).  We then create an indicator variable (\(I\)) which is 0 before \(t^*\) and 1 after.
+</p>
+
+<p>
+Our regression would now be:
+</p>
+
+<p>
+\[y_t = \alpha + \beta_1 x_t + \beta_2 (x_t I_t) + \epsilon_t\]
+</p>
+
+<p>
+where \(x_t I_t\) is the product of \(x_t\) and the indicator variable at time \(t\).
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgb49b101" class="outline-2">
+<h2 id="orgb49b101"><span class="section-number-2">2.</span> 1 vs 2 Month Crude Oil Futures</h2>
+<div class="outline-text-2" id="text-2">
 <div class="org-src-container">
 <pre class="src src-R"><span style="color: #268bd2; font-weight: bold;">library</span>(EIAdata)
 <span style="color: #268bd2; font-weight: bold;">library</span>(quantmod)
 </pre>
 </div>
-</div>
-</div>
 
-
-<div id="outline-container-orgf21f398" class="outline-2">
-<h2 id="orgf21f398"><span class="section-number-2">2.</span> 1 vs 2 Month Crude Oil Futures</h2>
-<div class="outline-text-2" id="text-2">
 <div class="org-src-container">
 <pre class="src src-R">key <span style="color: #268bd2; font-weight: bold;">&lt;-</span> <span style="color: #268bd2; font-weight: bold;">source</span>(<span style="color: #2aa198;">"~/eia_key"</span>)$value
 one_month <span style="color: #268bd2; font-weight: bold;">&lt;-</span> getEIA(<span style="color: #2aa198;">'PET.RCLC1.W'</span>, key = key)
@@ -95,8 +119,8 @@ two_month <span style="color: #268bd2; font-weight: bold;">&lt;-</span> getEIA(<
 </div>
 </div>
 
-<div id="outline-container-org1f549b8" class="outline-3">
-<h3 id="org1f549b8"><span class="section-number-3">2.1.</span> No Change in Slope</h3>
+<div id="outline-container-org2e74405" class="outline-3">
+<h3 id="org2e74405"><span class="section-number-3">2.1.</span> No Change in Slope</h3>
 <div class="outline-text-3" id="text-2-1">
 <p>
 \[oil2_t = \alpha + \beta oil1_t + \epsilon\]
@@ -111,31 +135,31 @@ summary(reg1)
 </pre>
 </div>
 
-<pre class="example" id="org43bfa60">
+<pre class="example" id="orge984cb2">
 
 Call:
 lm(formula = oil_data$two ~ oil_data$one)
 
 Residuals:
      Min       1Q   Median       3Q      Max 
--0.35516 -0.02315  0.00322  0.02237  0.20823 
+-0.35542 -0.02312  0.00318  0.02239  0.20814 
 
 Coefficients:
               Estimate Std. Error t value Pr(&gt;|t|)    
-(Intercept)  0.0007761  0.0021394   0.363    0.717    
-oil_data$one 0.1298306  0.0135754   9.564   &lt;2e-16 ***
+(Intercept)  0.0008366  0.0021355   0.392    0.695    
+oil_data$one 0.1298966  0.0135652   9.576   &lt;2e-16 ***
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-Residual standard error: 0.04503 on 442 degrees of freedom
+Residual standard error: 0.045 on 443 degrees of freedom
 Multiple R-squared:  0.1715,	Adjusted R-squared:  0.1696 
-F-statistic: 91.46 on 1 and 442 DF,  p-value: &lt; 2.2e-16
+F-statistic:  91.7 on 1 and 443 DF,  p-value: &lt; 2.2e-16
 </pre>
 </div>
 </div>
 
-<div id="outline-container-org2dae80e" class="outline-3">
-<h3 id="org2dae80e"><span class="section-number-3">2.2.</span> Test for a change in Slope Post 1/1/2020</h3>
+<div id="outline-container-orgad6895a" class="outline-3">
+<h3 id="orgad6895a"><span class="section-number-3">2.2.</span> Test for a change in Slope Post 1/1/2020</h3>
 <div class="outline-text-3" id="text-2-2">
 <p>
 \[oil2_t = \alpha + \beta_1 oil1_t + \beta_2 * (oil1_t * insicator_t) + \epsilon\]
@@ -148,7 +172,7 @@ oil_data
 </pre>
 </div>
 
-<pre class="example" id="orgc7dd6c6">
+<pre class="example" id="org5c5c17e">
                     one          two indicator
 2015-01-02 -0.041621816 -0.040627227         0
 2015-01-09 -0.087420442 -0.084881129         0
@@ -161,7 +185,6 @@ oil_data
 2015-02-27 -0.043637768 -0.019260107         0
 2015-03-06  0.017565112  0.015944002         0
        ...                                    
-2023-04-28 -0.036237374 -0.038378993         1
 2023-05-05 -0.067732215 -0.066824209         1
 2023-05-12  0.012788083  0.013224536         1
 2023-05-19 -0.005966422 -0.004582061         1
@@ -171,6 +194,7 @@ oil_data
 2023-06-16 -0.029896619 -0.029149233         1
 2023-06-23  0.014256912  0.015227697         1
 2023-06-30 -0.014198495 -0.015282298         1
+2023-07-07  0.034279130  0.032332232         1
 </pre>
 
 <div class="org-src-container">
@@ -179,26 +203,26 @@ summary(reg2)
 </pre>
 </div>
 
-<pre class="example" id="org27b9465">
+<pre class="example" id="org151bf89">
 
 Call:
 lm(formula = oil_data$two ~ oil_data$one + I(oil_data$one * oil_data$indicator))
 
 Residuals:
       Min        1Q    Median        3Q       Max 
--0.256784 -0.002520 -0.000329  0.004423  0.224879 
+-0.256826 -0.002575 -0.000390  0.004398  0.224778 
 
 Coefficients:
                                        Estimate Std. Error t value Pr(&gt;|t|)    
-(Intercept)                           0.0004253  0.0017376   0.245    0.807    
-oil_data$one                          0.9598248  0.0559223  17.164   &lt;2e-16 ***
-I(oil_data$one * oil_data$indicator) -0.8633876  0.0570306 -15.139   &lt;2e-16 ***
+(Intercept)                           0.0004891  0.0017349   0.282    0.778    
+oil_data$one                          0.9597789  0.0558976  17.170   &lt;2e-16 ***
+I(oil_data$one * oil_data$indicator) -0.8632673  0.0570052 -15.144   &lt;2e-16 ***
 ---
 Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-Residual standard error: 0.03657 on 441 degrees of freedom
-Multiple R-squared:  0.4548,	Adjusted R-squared:  0.4523 
-F-statistic: 183.9 on 2 and 441 DF,  p-value: &lt; 2.2e-16
+Residual standard error: 0.03655 on 442 degrees of freedom
+Multiple R-squared:  0.4545,	Adjusted R-squared:  0.452 
+F-statistic: 184.1 on 2 and 442 DF,  p-value: &lt; 2.2e-16
 </pre>
 
 
@@ -211,7 +235,7 @@ Pre covid the slope was 0.95.  Post covid the slope was 0.95 - 0.86 = 0.09.  The
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Matt Brigida, Ph.D.</p>
-<p class="date">Created: 2023-07-12 Wed 11:30</p>
+<p class="date">Created: 2023-07-12 Wed 22:43</p>
 <p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
