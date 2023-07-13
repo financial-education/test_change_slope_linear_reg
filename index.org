@@ -7,7 +7,7 @@
 
 * Overview
 
-We want to test whether there was a change in the relationship between two time series after some event.  Assume we can model the relationship between the series with a linear regression, so we want to test whether the slope coefficient changed after some event.  Say we are looking at the relationship between two time-series, /y/ and /x/.
+We want to test whether there was a change in the relationship between two time series after some event.  Assume we can model the relationship between the series with a linear regression, so we want to test whether the slope coefficient changed after some event.  Say we are looking at the relationship between two time-series, $y$ and $x$.
 
 A standard regression would be:
 
@@ -21,15 +21,22 @@ $$y_t = \alpha + \beta_1 x_t + \beta_2 (x_t I_t) + \epsilon_t$$
 
 where $x_t I_t$ is the product of $x_t$ and the indicator variable at time $t$.
 
+Note the regression prior to the event is:
+
+$$y_t = \alpha + \beta_1 x_t + \epsilon_t$$
+
+because the indicator is 0.  After the event, when the indicator is 1, the equation is:
+
+$$y_t = \alpha + (\beta_1 + \beta_2)x_t  + \epsilon_t$$
 
 * 1 vs 2 Month Crude Oil Futures
 
-#+begin_src R :session ecm :eval yes :results none :exports code
+#+begin_src R :session ecm :eval no :results none :exports code
 library(EIAdata)
 library(quantmod)
 #+end_src
 
-#+begin_src R :session ecm :eval yes :results none :exports code
+#+begin_src R :session ecm :eval no :results none :exports code
 key <- source("~/eia_key")$value
 one_month <- getEIA('PET.RCLC1.W', key = key)
 two_month <- getEIA('PET.RCLC2.W', key = key)
@@ -37,9 +44,9 @@ two_month <- getEIA('PET.RCLC2.W', key = key)
 
 ** No Change in Slope
 
-$$oil2_t = \alpha + \beta oil1_t + \epsilon$$
+$$oil\_2_t = \alpha + \beta oil\_1_t + \epsilon$$
 
-#+begin_src R :session ecm :results output :exports both :eval yes
+#+begin_src R :session ecm :results output :exports both :eval no
 oil_data <- merge.xts(Delt(one_month)[-1], Delt(two_month)[-1,], join="inner")
 names(oil_data) <- c("one", "two")
 oil_data <- oil_data['2015-01-01/']
@@ -71,9 +78,9 @@ F-statistic: 91.46 on 1 and 442 DF,  p-value: < 2.2e-16
 
 ** Test for a change in Slope Post 1/1/2020
 
-$$oil2_t = \alpha + \beta_1 oil1_t + \beta_2 * (oil1_t * insicator_t) + \epsilon$$
+$$oil\_2_t = \alpha + \beta_1 oil\_1_t + \beta_2 * (oil\_1_t * indicator_t) + \epsilon$$
 
-#+begin_src R :session ecm :results output :exports both :eval yes
+#+begin_src R :session ecm :results output :exports both :eval no
 ## create an indicator function-----
 oil_data$indicator <- ifelse(index(oil_data) < "2020-01-01", 0 , 1)
 oil_data
@@ -105,7 +112,7 @@ oil_data
 2023-06-30 -0.014198495 -0.015282298         1
 #+end_example
 
-#+begin_src R :session ecm :results output :exports both :eval yes
+#+begin_src R :session ecm :results output :exports both :eval no
 reg2 <- lm(oil_data$two ~ oil_data$one + I(oil_data$one * oil_data$indicator))
 summary(reg2)
 #+end_src
@@ -134,4 +141,4 @@ F-statistic: 183.9 on 2 and 441 DF,  p-value: < 2.2e-16
 #+end_example
 
 
-Pre covid the slope was 0.95.  Post covid the slope was 0.95 - 0.86 = 0.09.  The difference in slope coefficients in significant at the 1% level.
+Pre covid the slope was src_R[:exports results :session ecm :eval no]{round(as.numeric(reg2$coefficients[2]), 3)} {{{results(=0.96=)}}}.  Post covid the slope was src_R[:exports results :session ecm :eval no]{round(as.numeric(reg2$coefficients[2]), 3)} {{{results(=0.96=)}}} + src_R[:exports results :session ecm :eval no]{round(as.numeric(reg2$coefficients[3]), 3)} {{{results(=-0.863=)}}} =  src_R[:exports results :session ecm :eval no]{round(as.numeric(reg2$coefficients[2]), 3) + round(as.numeric(reg2$coefficients[3]), 3)} {{{results(=0.097=)}}}.  The difference in slope coefficients in significant at the 1% level.
